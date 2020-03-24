@@ -14,18 +14,17 @@ raw_data = dr.get_relevant_data(tickers_list, 'Adj Close')
 log_returns = cc.process_raw_data(raw_data)
 
 # Compute pairwise correlations
-corr_data = cc.get_pairwise_correlations(log_returns, time_windows)
-avg_corr_data = cc.get_average_correlation(corr_data)
+corr_data = cc.get_correlations(log_returns, time_windows)
 
 # Process corr data
-cc.process_corr_data(corr_data, avg_corr_data)
+cc.process_corr_data(corr_data[0], corr_data[1])
 
 # Output data to CSV
-corr_data.to_csv('pairwise.csv', index=True)
-avg_corr_data.to_csv('avg.csv', index=True)
+corr_data[0].to_csv('pairwise.csv', index=True)
+corr_data[1].to_csv('avg.csv', index=True)
 
 # Plot
-pl.plot_data(corr_data, avg_corr_data, data_to_plot)
+pl.plot_data(corr_data[0], corr_data[1], data_to_plot)
 
 
 
