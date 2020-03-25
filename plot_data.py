@@ -7,9 +7,17 @@ import matplotlib.dates as mdates
 def plot_data(corr_data, avg_corr_data, data_to_plot):
     """Function to plot data requested in MatplotLib"""
     idx = pd.IndexSlice
-    plot_in_format = \
-        pd.DataFrame(np.zeros(len(corr_data.index.unique('Date'))), index=corr_data.index.unique('Date'),
-                     columns=[data_to_plot[0][0] + '/' + data_to_plot[0][1] + ' - ' + str(data_to_plot[0][2]) + 'D'])
+    if data_to_plot[0][0] != 'BASKET CORREL':
+        plot_in_format = \
+            pd.DataFrame(np.zeros(len(corr_data.index.unique('Date'))), index=corr_data.index.unique('Date'),
+                         columns=
+                         [data_to_plot[0][0] + '/' + data_to_plot[0][1] + ' - ' + str(data_to_plot[0][2]) + 'D'])
+    else:
+        plot_in_format = \
+            pd.DataFrame(np.zeros(len(corr_data.index.unique('Date'))), index=corr_data.index.unique('Date'),
+                         columns=
+                         [data_to_plot[0][0] + ' - ' + str(data_to_plot[0][2]) + 'D'])
+
     for data_series in data_to_plot:
         if data_series[0] != 'BASKET CORREL':
             plot_in_format[data_series[0] + '/' + data_series[1] + ' - ' + str(data_series[2]) + 'D'] = \

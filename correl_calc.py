@@ -21,7 +21,7 @@ def get_correlations(log_returns, time_windows):
     """Function to compute pairwise correlations given a DF of returns"""
     # Get tickers list
     tickers_list = log_returns.columns
-    nbr_pairwise_corr = int((len(tickers_list) * (len(tickers_list)-1))/2)
+    nbr_pairwise_corr = int((len(tickers_list) * (len(tickers_list) - 1)) / 2)
     # Get DateIndex
     dates_index = log_returns.index
     # Define MultiIndex for pairwise correlations
@@ -60,5 +60,5 @@ def get_correlations(log_returns, time_windows):
                 multi_index_structure_avg[i * len(dates_index):((i + 1) * len(dates_index))] = \
                     np.mean(pairwise_correl_matrix, axis=1)
 
-    return pd.DataFrame(multi_index_structure_pairwise, index=multi_index_pair_wise, columns=tickers_list),\
+    return pd.DataFrame(multi_index_structure_pairwise, index=multi_index_pair_wise, columns=tickers_list), \
            pd.DataFrame(multi_index_structure_avg, index=multi_index_avg, columns=['Avg Correl'])
