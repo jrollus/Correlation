@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import traits.api as trapi
 import traitsui.api as trui
@@ -11,7 +12,9 @@ import plot_data as pl
 
 nbr_max_time_windows = 5
 screen_height = 400
-screen_width = 700
+screen_width = 600
+# message_height = 100
+# message_width = 320
 
 # The 'correlpairs' trait table editor:
 correl_pair_editor = trui.TableEditor(
@@ -27,6 +30,24 @@ correl_pair_editor = trui.TableEditor(
              CheckboxColumn(name='time_window_4', label='250', horizontal_alignment='center', width=0.08),
              CheckboxColumn(name='time_window_5', label='500', horizontal_alignment='center', width=0.08,
                             editable=False, format='%0.3f')])
+
+
+class Message(trapi.HasPrivateTraits):
+    """A class to show a message to the user"""
+    message = trapi.Str
+
+
+def message(message_input="", parent=None):
+    """Displays a message to the user as a model window"""
+    msg = Message(message=message_input)
+    ui = msg.edit_traits(
+        parent=parent,
+        view=trui.View(
+            ["message~", "|<>"], title='Error', buttons=["OK"], kind="modal", resizable=True,
+            icon='corr.png', image='corr.png'
+        ),
+    )
+    return ui.result
 
 
 class InputParameter(trapi.HasTraits):
@@ -79,16 +100,43 @@ class InputParameter(trapi.HasTraits):
                 data_to_plot.append((pair_name[0].strip(), pair_name[1].strip(), self.time_windows_input[0][3]))
             if self.correlpairs[i].time_window_5:
                 data_to_plot.append((pair_name[0].strip(), pair_name[1].strip(), self.time_windows_input[0][4]))
+
         # Plot
         pl.plot_data(corr_data[0], corr_data[1], data_to_plot)
 
+    def check_data_retrieval_error(self, raw_data, tickers_list):
+        """Check whether there was an error retrieving data"""
+        # Check whether data was retrieved successfully:
+        if self.data_source == 'Yahoo':
+            empty_col = []
+            for column_name in raw_data.columns:
+                if raw_data[column_name].isna().all():
+                    empty_col.append(column_name)
+            if empty_col:
+                message('There was a problem loading data for the following underlyings:\n' + '\n'.join(empty_col))
+                return True
+
+        elif self.data_source == 'Bloomberg':
+            if len(raw_data.columns) < len(tickers_list):
+                und_errors = np.setdiff1d(tickers_list, raw_data.columns)
+                message('There was a problem loading data for the following underlyings:\n' + '\n'.join(und_errors))
+                return True
+
+        return False
+
     def _get_data_button_fired(self):
         """Method to download the relevant data and then compute the relevant correlations"""
-        tickers_list = self.tickers_input.strip().split()
+        tickers_list = self.tickers_input.strip().split('\n')
+
         time_windows = self.time_windows_input[0, :]
 
         # Get raw data
         raw_data = dr.get_relevant_data(tickers_list, self.date_start, self.date_end, self.data_source)
+
+        # Check whether there was an error retrieving data
+        data_error = self.check_data_retrieval_error(raw_data, tickers_list)
+        if data_error:
+            return
 
         # Process raw data
         log_returns = cc.process_raw_data(raw_data)
@@ -107,7 +155,6 @@ class InputParameter(trapi.HasTraits):
         self.corr_pairs_combinations = [pair[0] + ' - ' + pair[1] for pair in it.combinations(tickers_list, 2)]
         self.corr_pairs_combinations.append('BASKET CORREL')
         self.correlpairs = [generate_correl_pair(pair) for pair in self.corr_pairs_combinations]
-
 
 class CorrelPair(trapi.HasStrictTraits):
     """Class to define a row in the table"""

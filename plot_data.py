@@ -9,12 +9,14 @@ def plot_data(corr_data, avg_corr_data, data_to_plot):
     idx = pd.IndexSlice
     if data_to_plot[0][0] != 'BASKET CORREL':
         plot_in_format = \
-            pd.DataFrame(np.zeros(len(corr_data.index.unique('Date'))), index=corr_data.index.unique('Date'),
+            pd.DataFrame(np.zeros(len(corr_data.index.unique('Date'))),
+                         index=pd.to_datetime((corr_data.index.unique('Date'))),
                          columns=
                          [data_to_plot[0][0] + '/' + data_to_plot[0][1] + ' - ' + str(data_to_plot[0][2]) + 'D'])
     else:
         plot_in_format = \
-            pd.DataFrame(np.zeros(len(corr_data.index.unique('Date'))), index=corr_data.index.unique('Date'),
+            pd.DataFrame(np.zeros(len(corr_data.index.unique('Date'))),
+                         index=pd.to_datetime(corr_data.index.unique('Date')),
                          columns=
                          [data_to_plot[0][0] + ' - ' + str(data_to_plot[0][2]) + 'D'])
 
