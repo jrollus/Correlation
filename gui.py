@@ -117,6 +117,8 @@ class InputParameter(trapi.HasTraits):
                 if empty_col:
                     message('There was a problem loading data for the following underlyings:\n' + '\n'.join(empty_col))
                     return [x for x in tickers_list if x not in empty_col]
+                else:
+                    return tickers_list
             else:
                 return tickers_list
 
@@ -126,6 +128,8 @@ class InputParameter(trapi.HasTraits):
                     und_errors = np.setdiff1d(tickers_list, raw_data.columns)
                     message('There was a problem loading data for the following underlyings:\n' + '\n'.join(und_errors))
                     return [x for x in tickers_list if x not in und_errors]
+                else:
+                    return tickers_list
             else:
                 return tickers_list
 
@@ -146,6 +150,9 @@ class InputParameter(trapi.HasTraits):
 
         # Process raw data
         log_returns = cc.process_raw_data(raw_data)
+
+        # Filter log returns
+        log_returns = cc.filter_log_returns(log_returns)
 
         # Compute pairwise correlations
         corr_data = cc.get_correlations(log_returns, time_windows)
