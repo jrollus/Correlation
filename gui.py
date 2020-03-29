@@ -24,12 +24,12 @@ correl_pair_editor = trui.TableEditor(
     selected_indices='selected_correl_pair_indices',
     columns=[ObjectColumn(name='correl_pair', label='Correlation Pair / Time Window',
                           horizontal_alignment='center', width=0.24),
-             CheckboxColumn(name='time_window_1', label='10', horizontal_alignment='center', width=0.08),
-             CheckboxColumn(name='time_window_2', label='30', horizontal_alignment='center', width=0.08),
-             CheckboxColumn(name='time_window_3', label='50', horizontal_alignment='center', width=0.08),
-             CheckboxColumn(name='time_window_4', label='250', horizontal_alignment='center', width=0.08),
-             CheckboxColumn(name='time_window_5', label='500', horizontal_alignment='center', width=0.08,
-                            editable=False, format='%0.3f')])
+             CheckboxColumn(name='time_window_1', label='', horizontal_alignment='center', width=0.08),
+             CheckboxColumn(name='time_window_2', label='', horizontal_alignment='center', width=0.08),
+             CheckboxColumn(name='time_window_3', label='', horizontal_alignment='center', width=0.08),
+             CheckboxColumn(name='time_window_4', label='', horizontal_alignment='center', width=0.08),
+             CheckboxColumn(name='time_window_5', label='', horizontal_alignment='center', width=0.08,
+                            editable=True, format='%0.3f')])
 
 
 class Message(trapi.HasPrivateTraits):
@@ -108,34 +108,40 @@ class InputParameter(trapi.HasTraits):
         """Check whether there was an error retrieving data"""
         # Check whether data was retrieved successfully:
         if self.data_source == 'Yahoo':
-            empty_col = []
-            for column_name in raw_data.columns:
-                if raw_data[column_name].isna().all():
-                    empty_col.append(column_name)
-            if empty_col:
-                message('There was a problem loading data for the following underlyings:\n' + '\n'.join(empty_col))
-                return True
+            if len(tickers_list) > 1:
+                empty_col = []
+                for column_name in raw_data.columns:
+                    if raw_data[column_name].isna().all():
+                        empty_col.append(column_name)
+                        raw_data[column_name].drop
+                if empty_col:
+                    message('There was a problem loading data for the following underlyings:\n' + '\n'.join(empty_col))
+                    return [x for x in tickers_list if x not in empty_col]
+            else:
+                return tickers_list
 
         elif self.data_source == 'Bloomberg':
-            if len(raw_data.columns) < len(tickers_list):
-                und_errors = np.setdiff1d(tickers_list, raw_data.columns)
-                message('There was a problem loading data for the following underlyings:\n' + '\n'.join(und_errors))
-                return True
-
-        return False
+            if len(tickers_list) > 1:
+                if len(raw_data.columns) < len(tickers_list):
+                    und_errors = np.setdiff1d(tickers_list, raw_data.columns)
+                    message('There was a problem loading data for the following underlyings:\n' + '\n'.join(und_errors))
+                    return [x for x in tickers_list if x not in und_errors]
+            else:
+                return tickers_list
 
     def _get_data_button_fired(self):
         """Method to download the relevant data and then compute the relevant correlations"""
         tickers_list = self.tickers_input.strip().split('\n')
 
-        time_windows = self.time_windows_input[0, :]
+        time_windows = self.time_windows_input[0, :].astype(int)
 
         # Get raw data
         raw_data = dr.get_relevant_data(tickers_list, self.date_start, self.date_end, self.data_source)
 
         # Check whether there was an error retrieving data
-        data_error = self.check_data_retrieval_error(raw_data, tickers_list)
-        if data_error:
+        tickers_list = self.check_data_retrieval_error(raw_data, tickers_list)
+        if len(tickers_list) <= 1:
+            message('You need at least two underlyings to compute correlations')
             return
 
         # Process raw data
@@ -152,9 +158,12 @@ class InputParameter(trapi.HasTraits):
         corr_data[1].to_csv('avg.csv', index=True)
 
         # Generate TableEditor
+        for i in range(0,len(time_windows)):
+            correl_pair_editor.columns[i+1].label = str(time_windows[i])
         self.corr_pairs_combinations = [pair[0] + ' - ' + pair[1] for pair in it.combinations(tickers_list, 2)]
         self.corr_pairs_combinations.append('BASKET CORREL')
         self.correlpairs = [generate_correl_pair(pair) for pair in self.corr_pairs_combinations]
+
 
 class CorrelPair(trapi.HasStrictTraits):
     """Class to define a row in the table"""

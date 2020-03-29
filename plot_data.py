@@ -22,10 +22,10 @@ def plot_data(corr_data, avg_corr_data, data_to_plot):
 
     for data_series in data_to_plot:
         if data_series[0] != 'BASKET CORREL':
-            plot_in_format[data_series[0] + '/' + data_series[1] + ' - ' + str(data_series[2]) + 'D'] = \
+            plot_in_format[data_series[0] + '/' + data_series[1] + ' - ' + str(int(data_series[2])) + 'D'] = \
                 corr_data.loc[idx[data_series[2], :, data_series[0]], data_series[1]].values
         else:
-            plot_in_format[data_series[0] + ' - ' + str(data_series[2]) + 'D'] = \
+            plot_in_format[data_series[0] + ' - ' + str(int(data_series[2])) + 'D'] = \
                 avg_corr_data.loc[idx[data_series[2], :], :].values
 
     # Plot Data
