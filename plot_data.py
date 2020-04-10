@@ -29,6 +29,7 @@ def plot_data(corr_data, avg_corr_data, data_to_plot):
                 avg_corr_data.loc[idx[data_series[2], :], :].values
 
     # Plot Data
+    plot_in_format = plot_in_format.dropna()
     ax = plot_in_format.plot(figsize=(15, 6), lw=2.)
 
     # General Parameters

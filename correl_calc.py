@@ -6,18 +6,19 @@ from pandas.tseries.offsets import BDay
 
 
 def process_corr_data(corr_data, avg_corr_data):
-    """Remove dates where correlation could not be computed"""
-    corr_data.dropna()
-    avg_corr_data.dropna()
+    """Export computed correlations to .csv"""
+    # Output data to CSV
+    corr_data.to_csv('pairwise.csv', index=True)
+    avg_corr_data.to_csv('avg.csv', index=True)
 
 
 def process_raw_data(raw_data):
     """Function to remove line with empty data to ensure the data set is consistent and then compute log returns"""
     # Clear raw data
-    raw_data.dropna()
+    raw_data = raw_data.dropna()
     # Get log returns
     log_returns = np.log(raw_data / raw_data.shift(1))
-    return log_returns
+    return log_returns.dropna()
 
 
 def get_correlations(log_returns, time_windows):

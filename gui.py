@@ -160,10 +160,6 @@ class InputParameter(trapi.HasTraits):
         # Process corr data
         cc.process_corr_data(corr_data[0], corr_data[1])
 
-        # Output data to CSV
-        corr_data[0].to_csv('pairwise.csv', index=True)
-        corr_data[1].to_csv('avg.csv', index=True)
-
         # Generate TableEditor
         for i in range(0,len(time_windows)):
             correl_pair_editor.columns[i+1].label = str(time_windows[i])
