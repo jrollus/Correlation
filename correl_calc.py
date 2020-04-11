@@ -128,5 +128,5 @@ def filter_log_returns(log_returns):
 
     log_returns = log_returns.dropna()
 
-
     return log_returns
+

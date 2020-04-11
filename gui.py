@@ -10,11 +10,10 @@ import data_retrieval as dr
 import correl_calc as cc
 import plot_data as pl
 
+# Constants
 nbr_max_time_windows = 5
 screen_height = 400
 screen_width = 600
-# message_height = 100
-# message_width = 320
 
 # The 'correlpairs' trait table editor:
 correl_pair_editor = trui.TableEditor(
@@ -59,6 +58,7 @@ class InputParameter(trapi.HasTraits):
     date_end = trapi.Date
     get_data_button = trapi.Button
     plot_chart_button = trapi.Button
+    corr_data = pd.DataFrame
     correlpairs = trapi.List
     selected_correl_pair_indices = trapi.List
     corr_pairs_combinations = trapi.List
@@ -79,9 +79,6 @@ class InputParameter(trapi.HasTraits):
 
     def _plot_chart_button_fired(self):
         """Method to plot the selected data"""
-        # Read data from CSV
-        corr_data = [pd.read_csv('pairwise.csv', index_col=[0, 1, 2]), pd.read_csv('avg.csv', index_col=[0, 1])]
-
         # Read TableEditor to see what the user has chosen to
         data_to_plot = []
         for i in range(0, len(self.correlpairs)):
@@ -102,7 +99,7 @@ class InputParameter(trapi.HasTraits):
                 data_to_plot.append((pair_name[0].strip(), pair_name[1].strip(), self.time_windows_input[0][4]))
 
         # Plot
-        pl.plot_data(corr_data[0], corr_data[1], data_to_plot)
+        pl.plot_data(self.corr_data[0], self.corr_data[1], data_to_plot)
 
     def check_data_retrieval_error(self, raw_data, tickers_list):
         """Check whether there was an error retrieving data"""
@@ -155,10 +152,7 @@ class InputParameter(trapi.HasTraits):
         log_returns = cc.filter_log_returns(log_returns)
 
         # Compute pairwise correlations
-        corr_data = cc.get_correlations(log_returns, time_windows)
-
-        # Process corr data
-        cc.process_corr_data(corr_data[0], corr_data[1])
+        self.corr_data = cc.get_correlations(log_returns, time_windows)
 
         # Generate TableEditor
         for i in range(0,len(time_windows)):
